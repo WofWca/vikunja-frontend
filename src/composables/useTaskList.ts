@@ -60,28 +60,12 @@ const SORT_BY_DEFAULT: SortBy = {
 /**
  * This mixin provides a base set of methods and properties to get tasks on a list.
  */
-export function useTaskList(listId, sortByDefault: SortBy = SORT_BY_DEFAULT) {
-	const params = ref({...getDefaultParams()})
-	
-	const search = ref('')
+export function useTaskList(listId) {
 	const page = ref(1)
-
-	const sortBy = ref({ ...sortByDefault })
-
-
-
 	const getAllTasksParams = computed(() => {
-		let loadParams = {...params.value}
-
-		if (search.value !== '') {
-			loadParams.s = search.value
-		}
-
-		loadParams = formatSortOrder(sortBy.value, loadParams)
-
 		return [
 			{listId: listId.value},
-			loadParams,
+			{},
 			page.value || 1,
 		]
 	})
@@ -103,10 +87,7 @@ export function useTaskList(listId, sortByDefault: SortBy = SORT_BY_DEFAULT) {
 
 	const route = useRoute()
 	watch(() => route.query, (query) => {
-		const { page: pageQueryValue, search: searchQuery } = query
-		if (searchQuery !== undefined) {
-			search.value = searchQuery as string
-		}
+		const { page: pageQueryValue } = query
 		if (pageQueryValue !== undefined) {
 			page.value = Number(pageQueryValue)
 		}
@@ -129,8 +110,5 @@ export function useTaskList(listId, sortByDefault: SortBy = SORT_BY_DEFAULT) {
 		totalPages,
 		currentPage: page,
 		loadTasks,
-		searchTerm: search,
-		params,
-		sortByParam: sortBy,
 	}
 }

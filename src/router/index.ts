@@ -15,9 +15,6 @@ import HomeComponent from '@/views/Home.vue'
 import NotFoundComponent from '@/views/404.vue'
 const About = () => import('@/views/About.vue')
 // User Handling
-import LoginComponent from '@/views/user/Login.vue'
-import RegisterComponent from '@/views/user/Register.vue'
-import OpenIdAuth from '@/views/user/OpenIdAuth.vue'
 const DataExportDownload = () => import('@/views/user/DataExportDownload.vue')
 // Tasks
 import UpcomingTasksComponent from '@/views/tasks/ShowTasks.vue'
@@ -59,17 +56,11 @@ const FilterNew = () => import('@/views/filters/FilterNew.vue')
 const FilterEdit = () => import('@/views/filters/FilterEdit.vue')
 const FilterDelete = () => import('@/views/filters/FilterDelete.vue')
 
-const PasswordResetComponent = () => import('@/views/user/PasswordReset.vue')
-const GetPasswordResetComponent = () => import('@/views/user/RequestPasswordReset.vue')
 const UserSettingsComponent = () => import('@/views/user/Settings.vue')
 const UserSettingsAvatarComponent = () => import('@/views/user/settings/Avatar.vue')
 const UserSettingsCaldavComponent = () => import('@/views/user/settings/Caldav.vue')
 const UserSettingsDataExportComponent = () => import('@/views/user/settings/DataExport.vue')
-const UserSettingsDeletionComponent = () => import('@/views/user/settings/Deletion.vue')
-const UserSettingsEmailUpdateComponent = () => import('@/views/user/settings/EmailUpdate.vue')
 const UserSettingsGeneralComponent = () => import('@/views/user/settings/General.vue')
-const UserSettingsPasswordUpdateComponent = () => import('@/views/user/settings/PasswordUpdate.vue')
-const UserSettingsTOTPComponent = () => import('@/views/user/settings/TOTP.vue')
 
 // List Handling
 const NewListComponent = () => import('@/views/list/NewList.vue')
@@ -96,6 +87,7 @@ const router = createRouter({
 		// Otherwise just scroll to the top
 		return {left: 0, top: 0}
 	},
+	// TODO remove the references of the removed routes.
 	routes: [
 		{
 			path: '/',
@@ -112,38 +104,6 @@ const router = createRouter({
 			path: '/:pathMatch(.*)',
 			name: 'bad-not-found',
 			component: NotFoundComponent,
-		},
-		{
-			path: '/login',
-			name: 'user.login',
-			component: LoginComponent,
-			meta: {
-				title: 'user.auth.login',
-			},
-		},
-		{
-			path: '/get-password-reset',
-			name: 'user.password-reset.request',
-			component: GetPasswordResetComponent,
-			meta: {
-				title: 'user.auth.resetPassword',
-			},
-		},
-		{
-			path: '/password-reset',
-			name: 'user.password-reset.reset',
-			component: PasswordResetComponent,
-			meta: {
-				title: 'user.auth.resetPassword',
-			},
-		},
-		{
-			path: '/register',
-			name: 'user.register',
-			component: RegisterComponent,
-			meta: {
-				title: 'user.auth.createAccount',
-			},
 		},
 		{
 			path: '/user/settings',
@@ -167,29 +127,9 @@ const router = createRouter({
 					component: UserSettingsDataExportComponent,
 				},
 				{
-					path: '/user/settings/deletion',
-					name: 'user.settings.deletion',
-					component: UserSettingsDeletionComponent,
-				},
-				{
-					path: '/user/settings/email-update',
-					name: 'user.settings.email-update',
-					component: UserSettingsEmailUpdateComponent,
-				},
-				{
 					path: '/user/settings/general',
 					name: 'user.settings.general',
 					component: UserSettingsGeneralComponent,
-				},
-				{
-					path: '/user/settings/password-update',
-					name: 'user.settings.password-update',
-					component: UserSettingsPasswordUpdateComponent,
-				},
-				{
-					path: '/user/settings/totp',
-					name: 'user.settings.totp',
-					component: UserSettingsTOTPComponent,
 				},
 			],
 		},
@@ -460,11 +400,6 @@ const router = createRouter({
 			},
 		},
 		{
-			path: '/auth/openid/:provider',
-			name: 'openid.auth',
-			component: OpenIdAuth,
-		},
-		{
 			path: '/about',
 			name: 'about',
 			component: About,
@@ -472,6 +407,7 @@ const router = createRouter({
 	],
 })
 
+// TODO_OFFLINE Remove this function?
 export async function getAuthForRoute(route: RouteLocation) {
 	const authStore = useAuthStore()
 	if (authStore.authUser || authStore.authLinkShare) {

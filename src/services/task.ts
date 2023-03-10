@@ -6,6 +6,7 @@ import LabelService from './label'
 
 import {colorFromHex} from '@/helpers/color/colorFromHex'
 import {SECONDS_A_DAY, SECONDS_A_HOUR, SECONDS_A_WEEK, SECONDS_A_MONTH, SECONDS_A_YEAR} from '@/constants/date'
+import { createTask, deleteTask, getAllTasks, getTask, updateTask } from '@/localBackend/tasks'
 
 const parseDate = date => {
 	if (date) {
@@ -24,6 +25,22 @@ export default class TaskService extends AbstractService<ITask> {
 			update: '/tasks/{id}',
 			delete: '/tasks/{id}',
 		})
+	}
+
+	_getAll = () => {
+		return getAllTasks()
+	}
+	_get = (model: ITask) => {
+		return getTask(model.id)
+	}
+	_create = (taskData) => {
+		return createTask(taskData)
+	}
+	_update(model: ITask) {
+		return updateTask(model)
+	}
+	_delete(model: ITask) {
+		return deleteTask(model.id)
 	}
 
 	modelFactory(data) {

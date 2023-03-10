@@ -80,10 +80,46 @@ export const useConfigStore = defineStore('config', () => {
 		Object.assign(state, config)
 	}
 	async function update(): Promise<boolean> {
-		const HTTP = HTTPFactory()
-		const {data: config} = await HTTP.get('info')
-		setConfig(objectToCamelCase(config))
-		const success = !!config
+		// TODO_OFFLINE it's just a stub currently
+		setConfig({
+			version: 'v0.20.1+134-a62b57ac62',
+			frontendUrl: 'https://try.vikunja.io/',
+			motd: '',
+			linkSharingEnabled: true,
+			maxFileSize: '20MB',
+			registrationEnabled: true,
+			availableMigrators: [
+				'vikunja-file',
+				// These require the internet.
+				// 'ticktick',
+				// 'todoist',
+			],
+			taskAttachmentsEnabled: true,
+			enabledBackgroundProviders: [
+				'upload',
+				// 'unsplash',
+			],
+			totpEnabled: false,
+			legal: {
+				imprintUrl: '',
+				privacyPolicyUrl: '',
+			},
+			caldavEnabled: true,
+			auth: {
+				local: {
+					enabled: true,
+				},
+				openidConnect: {
+					enabled: false,
+					redirectUrl: 'https://try.vikunja.io/auth/openid/',
+					providers: null,
+				},
+			},
+			emailRemindersEnabled: false,
+			userDeletionEnabled: false,
+			taskCommentsEnabled: true,
+		})
+		const success = true
 		return success
 	}
 

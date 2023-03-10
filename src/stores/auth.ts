@@ -208,22 +208,8 @@ export const useAuthStore = defineStore('auth', () => {
 			return
 		}
 
-		const jwt = getToken()
-		let isAuthenticated = false
-		if (jwt) {
-			const base64 = jwt
-				.split('.')[1]
-				.replace('-', '+')
-				.replace('_', '/')
-			const info = new UserModel(JSON.parse(atob(base64)))
-			const ts = Math.round((new Date()).getTime() / MILLISECONDS_A_SECOND)
-			isAuthenticated = info.exp >= ts
-			setUser(info)
-
-			if (isAuthenticated) {
-				await refreshUserInfo()
-			}
-		}
+		const isAuthenticated = true
+		await refreshUserInfo()
 
 		setAuthenticated(isAuthenticated)
 		if (!isAuthenticated) {
@@ -235,19 +221,35 @@ export const useAuthStore = defineStore('auth', () => {
 	}
 
 	async function refreshUserInfo() {
-		const jwt = getToken()
-		if (!jwt) {
-			return
-		}
-
-		const HTTP = AuthenticatedHTTPFactory()
 		try {
-			const response = await HTTP.get('user')
+			// TODO_OFFLINE
 			const newUser = new UserModel({
-				...response.data,
-				...(info.value?.type && {type: info.value?.type}),
-				...(info.value?.email && {email: info.value?.email}),
-				...(info.value?.exp && {exp: info.value?.exp}),
+				maxRight: null,
+				id: 1,
+				email: 'demo@vikunja.io',
+				username: 'demo',
+				name: '',
+				// TODO_OFFLINE how do we make it never expire?
+				exp: 1678108752,
+				type: 1,
+				created: '2021-05-30T08:45:25.000Z',
+				updated: '2023-03-03T10:50:28.000Z',
+				settings: {
+					maxRight: null,
+					name: '',
+					emailRemindersEnabled: false,
+					discoverableByName: false,
+					discoverableByEmail: false,
+					overdueTasksRemindersEnabled: false,
+					overdueTasksRemindersTime: '09:00',
+					// TODO_OFFLINE this is 0 by default.
+					defaultListId: 1,
+					weekStart: 1,
+					timezone: 'Europe/Moscow',
+					language: 'ru-RU',
+				},
+				isLocalUser: true,
+				deletionScheduledAt: '0001-01-01T00:00:00Z',
 			})
 
 			setUser(newUser)

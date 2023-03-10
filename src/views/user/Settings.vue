@@ -43,23 +43,8 @@ const navigationItems = computed(() => {
 			routeName: 'user.settings.general',
 		},
 		{
-			title: t('user.settings.newPasswordTitle'),
-			routeName: 'user.settings.password-update',
-			condition: isLocalUser.value,
-		},
-		{
-			title: t('user.settings.updateEmailTitle'),
-			routeName: 'user.settings.email-update',
-			condition: isLocalUser.value,
-		},
-		{
 			title: t('user.settings.avatar.title'),
 			routeName: 'user.settings.avatar',
-		},
-		{
-			title: t('user.settings.totp.title'),
-			routeName: 'user.settings.totp',
-			condition: totpEnabled.value,
 		},
 		{
 			title: t('user.export.title'),
@@ -74,11 +59,6 @@ const navigationItems = computed(() => {
 			title: t('user.settings.caldav.title'),
 			routeName: 'user.settings.caldav',
 			condition: caldavEnabled.value,
-		},
-		{
-			title: t('user.deletion.title'),
-			routeName: 'user.settings.deletion',
-			condition: userDeletionEnabled.value,
 		},
 	]
 	
