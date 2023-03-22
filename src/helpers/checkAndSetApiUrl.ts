@@ -5,6 +5,7 @@ const API_DEFAULT_PORT = '3456'
 export const ERROR_NO_API_URL = 'noApiUrlProvided'
 
 
+// TODO_OFFLINE remove?
 export const checkAndSetApiUrl = (url: string): Promise<string> => {
 	if (url.startsWith('/')) {
 		url = window.location.host + url

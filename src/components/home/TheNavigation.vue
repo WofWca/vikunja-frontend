@@ -5,32 +5,13 @@
 			<Logo width="164" height="48" />
 		</router-link>
 
-		<MenuButton class="menu-button" />
-
-		<div v-if="currentProject.id" class="project-title-wrapper">
-			<h1 class="project-title">{{ currentProject.title === '' ? $t('misc.loading') : getProjectTitle(currentProject) }}
-			</h1>
-
-			<BaseButton :to="{ name: 'project.info', params: { projectId: currentProject.id } }" class="project-title-button">
-				<icon icon="circle-info" />
-			</BaseButton>
-
-			<project-settings-dropdown v-if="canWriteCurrentProject && currentProject.id !== -1"
-				class="project-title-dropdown" :project="currentProject">
-				<template #trigger="{ toggleOpen }">
-					<BaseButton class="project-title-button" @click="toggleOpen">
-						<icon icon="ellipsis-h" class="icon" />
-					</BaseButton>
-				</template>
-			</project-settings-dropdown>
-		</div>
+		<!-- <MenuButton class="menu-button" /> -->
 
 		<div class="navbar-end">
 			<BaseButton @click="openQuickActions" class="trigger-button" v-shortcut="'Control+k'"
 				:title="$t('keyboardShortcuts.quickSearch')">
 				<icon icon="search" />
 			</BaseButton>
-			<Notifications />
 			<dropdown>
 				<template #trigger="{ toggleOpen, open }">
 					<BaseButton class="username-dropdown-trigger" @click="toggleOpen" variant="secondary" :shadow="false">
@@ -58,9 +39,6 @@
 				</dropdown-item>
 				<dropdown-item :to="{ name: 'about' }">
 					{{ $t('about.title') }}
-				</dropdown-item>
-				<dropdown-item @click="authStore.logout()">
-					{{ $t('user.auth.logout') }}
 				</dropdown-item>
 			</dropdown>
 		</div>

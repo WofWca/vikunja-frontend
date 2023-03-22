@@ -1,50 +1,6 @@
 <template>
 	<ProjectWrapper class="project-list" :project-id="projectId" viewName="project">
 		<template #header>
-		<div
-			class="filter-container"
-			v-if="!isSavedFilter(project)"
-		>
-			<div class="items">
-				<div class="search">
-					<div :class="{ hidden: !showTaskSearch }" class="field has-addons">
-						<div class="control has-icons-left has-icons-right">
-							<input
-								@blur="hideSearchBar()"
-								@keyup.enter="searchTasks"
-								class="input"
-								:placeholder="$t('misc.search')"
-								type="text"
-								v-focus
-								v-model="searchTerm"
-							/>
-							<span class="icon is-left">
-								<icon icon="search"/>
-							</span>
-						</div>
-						<div class="control">
-							<x-button
-								:loading="loading"
-								@click="searchTasks"
-								:shadow="false"
-							>
-								{{ $t('misc.search') }}
-							</x-button>
-						</div>
-					</div>
-					<x-button
-						@click="showTaskSearch = !showTaskSearch"
-						icon="search"
-						variant="secondary"
-						v-if="!showTaskSearch"
-					/>
-				</div>
-				<filter-popup
-					v-model="params"
-					@update:modelValue="prepareFiltersAndLoadTasks()"
-				/>
-			</div>
-		</div>
 		</template>
 
 		<template #default>
@@ -152,7 +108,6 @@ const props = defineProps({
 })
 
 const ctaVisible = ref(false)
-const showTaskSearch = ref(false)
 
 const drag = ref(false)
 const DRAG_OPTIONS = {
@@ -160,21 +115,20 @@ const DRAG_OPTIONS = {
 	ghostClass: 'task-ghost',
 } as const
 
+// TODO_OFFLINE load tasks from somewhere else
 const {
 	tasks,
 	loading,
 	totalPages,
 	currentPage,
 	loadTasks,
-	searchTerm,
-	params,
-	sortByParam,
+	// searchTerm,
+	// params,
+	// sortByParam,
 } = useTaskList(toRef(props, 'projectId'), {position: 'asc' })
 
 
-const isAlphabeticalSorting = computed(() => {
-	return params.value.sort_by.find(sortBy => sortBy === ALPHABETICAL_SORT) !== undefined
-})
+const isAlphabeticalSorting = computed(() => false)
 
 const firstNewPosition = computed(() => {
 	if (tasks.value.length === 0) {
@@ -199,29 +153,6 @@ onMounted(async () => {
 
 const route = useRoute()
 const router = useRouter()
-
-function searchTasks() {
-	// Only search if the search term changed
-	if (route.query as unknown as string === searchTerm.value) {
-		return
-	}
-
-	router.push({
-		name: 'project.list',
-		query: {search: searchTerm.value},
-	})
-}
-
-function hideSearchBar() {
-	// This is a workaround.
-	// When clicking on the search button, @blur from the input is fired. If we
-	// would then directly hide the whole search bar directly, no click event
-	// from the button gets fired. To prevent this, we wait 200ms until we hide
-	// everything so the button has a chance of firing the search event.
-	setTimeout(() => {
-		showTaskSearch.value = false
-	}, 200)
-}
 
 const addTaskRef = ref<typeof AddTask | null>(null)
 function focusNewTaskInput() {
@@ -266,15 +197,6 @@ async function saveTaskPosition(e) {
 
 	const updatedTask = await taskStore.update(newTask)
 	tasks.value[e.newIndex] = updatedTask
-}
-
-function prepareFiltersAndLoadTasks() {
-	if(isAlphabeticalSorting.value) {
-		sortByParam.value = {} 
-		sortByParam.value[ALPHABETICAL_SORT] = 'asc'
-	}
-	
-	loadTasks()
 }
 </script>
 

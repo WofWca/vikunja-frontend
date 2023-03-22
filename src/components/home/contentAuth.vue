@@ -16,6 +16,7 @@
 				:class="{'is-visible': background}"
 				class="app-container-background background-fade-in d-print-none"
 				:style="{'background-image': background && `url(${background})`}"></div>
+			<!-- Can't remove <navigation> because otherwise namespaces would not get loaded. -->
 			<navigation class="d-print-none"/>
 			<main
 				class="app-content"
@@ -71,7 +72,6 @@ import {useBaseStore} from '@/stores/base'
 import {useLabelStore} from '@/stores/labels'
 
 import {useRouteWithModal} from '@/composables/useRouteWithModal'
-import {useRenewTokenOnFocus} from '@/composables/useRenewTokenOnFocus'
 
 const {routeWithModal, currentModal, closeModal} = useRouteWithModal()
 
@@ -111,8 +111,6 @@ watch(() => route.name as string, (routeName) => {
 })
 
 // TODO: Reset the title if the page component does not set one itself
-
-useRenewTokenOnFocus()
 
 const labelStore = useLabelStore()
 labelStore.loadAllLabels()

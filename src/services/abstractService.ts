@@ -4,7 +4,7 @@ import type {Method} from 'axios'
 import {objectToSnakeCase} from '@/helpers/case'
 import AbstractModel from '@/models/abstractModel'
 import type {IAbstract} from '@/modelTypes/IAbstract'
-import type {Right} from '@/constants/rights'
+import {RIGHTS} from '@/constants/rights'
 
 interface Paths {
 	create : string
@@ -268,12 +268,34 @@ export default abstract class AbstractService<Model extends IAbstract = IAbstrac
 	 * @param params Optional query parameters
 	 */
 	get(model : Model, params = {}) {
+		if (this._get) {
+			return this.get_Offline(...arguments);
+		}
+
 		if (this.paths.get === '') {
 			throw new Error('This model is not able to get data.')
 		}
 
 		return this.getM(this.paths.get, model, params)
 	}
+	async get_Offline(model : Model, params = {}) {
+		const cancel = this.setLoading()
+
+		model = this.beforeGet(model)
+
+		try {
+			// TODO_OFFLINE `_get` should throw if it can't properly handle all the arguments
+			// so that I can more easily find unsupported usages in the code.
+			const modelInitObj = await this._get(...arguments);
+			const result = this.modelGetFactory(modelInitObj)
+			// TODO_OFFLINE what does this do?
+			result.maxRight = RIGHTS.READ_WRITE
+			return result
+		} finally {
+			cancel()
+		}
+	}
+	abstract _get?: (model : Model, params) => PromiseLike<Model> | Model
 
 	/**
 	 * This is a more abstract implementation which only does a get request.
@@ -313,6 +335,12 @@ export default abstract class AbstractService<Model extends IAbstract = IAbstrac
 	 * @param page The page to get
 	 */
 	async getAll(model : Model = new AbstractModel({}), params = {}, page = 1): Promise<Model[]> {
+		// TODO_OFFLINE this is a condition for debugging getAll_Offline will replace `getALl`
+		// when we're done defining `abstract _getAll`.
+		if (this._getAll) {
+			return this.getAll_Offline(...arguments)
+		}
+
 		if (this.paths.getAll === '') {
 			throw new Error('This model is not able to get data.')
 		}
@@ -337,12 +365,45 @@ export default abstract class AbstractService<Model extends IAbstract = IAbstrac
 			cancel()
 		}
 	}
+	// TODO_OFFLINE warn if arguments were provided such that we can find the places
+	// where we're supposed to depend on them.
+	async getAll_Offline(model : Model = new AbstractModel({}), params = {}, page = 1): Promise<Model[]> {
+		// params.page = page
+
+		const cancel = this.setLoading()
+		// model = this.beforeGet(model)
+		// const finalUrl = this.getReplacedRoute(this.paths.getAll, model)
+
+		try {
+			// const response = await this.http.get(finalUrl, {params: prepareParams(params)})
+			// this.resultCount = Number(response.headers['x-pagination-result-count'])
+			// this.totalPages = Number(response.headers['x-pagination-total-pages'])
+
+			const modelInitObjects = await this._getAll(...arguments)
+			this.totalPages = 1 // TODO_OFFLINE?
+			this.resultCount = modelInitObjects.length
+
+			return modelInitObjects.map(entry => this.modelGetAllFactory(entry))
+		} finally {
+			cancel()
+		}
+	}
+
+	// TODO_OFFLINE what if service doesn't implements `getAll`? Need some composition I guess,
+	// instead of just throwing.
+	// Also a better name?
+	// abstract _getAll(): PromiseLike<Model[]> | Model[]
+	abstract _getAll?: () => PromiseLike<Model[]> | Model[]
 
 	/**
 	 * Performs a put request to the url specified before
 	 * @returns {Promise<any | never>}
 	 */
 	async create(model : Model) {
+		if (this._create) {
+			return this.create_Offline(...arguments)
+		}
+
 		if (this.paths.create === '') {
 			throw new Error('This model is not able to create data.')
 		}
@@ -361,6 +422,30 @@ export default abstract class AbstractService<Model extends IAbstract = IAbstrac
 			cancel()
 		}
 	}
+	async create_Offline(model : Model) {
+		const cancel = this.setLoading()
+		try {
+			// As in http interceptors above.
+			// For interaction with a real backend we'd convert to snake case here,
+			// but locally we can store everything in the camel case format, which is used
+			// everywhere in the app, unlike snake case.
+			const toSend = this.beforeCreate(model)
+
+			const modelInitObj = await this._create(toSend)
+			const resultModel = this.modelCreateFactory(modelInitObj)
+
+			// This doesn't actually do anything currently, I think, since we're just copying
+			// whatever was passed to `localStorage`
+			if (typeof model.maxRight !== 'undefined') {
+				resultModel.maxRight = model.maxRight
+			}
+
+			return resultModel
+		} finally {
+			cancel()
+		}
+	}
+	abstract _create(model: Model)
 
 	/**
 	 * An abstract implementation to send post requests.
@@ -385,6 +470,10 @@ export default abstract class AbstractService<Model extends IAbstract = IAbstrac
 	 * Performs a post request to the update url
 	 */
 	update(model : Model) {
+		if (this._update) {
+			return this.update_Offline(...arguments)
+		}
+
 		if (this.paths.update === '') {
 			throw new Error('This model is not able to update data.')
 		}
@@ -392,11 +481,34 @@ export default abstract class AbstractService<Model extends IAbstract = IAbstrac
 		const finalUrl = this.getReplacedRoute(this.paths.update, model)
 		return this.post(finalUrl, model)
 	}
+	async update_Offline(model: Model) {
+		const cancel = this.setLoading()
+
+		try {
+			const toSend = this.beforeUpdate(model)
+
+			const modelInitObj = await this._update(toSend)
+			const newModel = this.modelUpdateFactory(modelInitObj)
+
+			if (typeof model.maxRight !== 'undefined') {
+				newModel.maxRight = model.maxRight
+			}
+
+			return newModel
+		} finally {
+			cancel()
+		}
+	}
+	abstract _update(model: unknown)
 
 	/**
 	 * Performs a delete request to the update url
 	 */
 	async delete(model : Model) {
+		if (this._delete) {
+			return this.delete_Offline(...arguments)
+		}
+
 		if (this.paths.delete === '') {
 			throw new Error('This model is not able to delete data.')
 		}
@@ -411,6 +523,24 @@ export default abstract class AbstractService<Model extends IAbstract = IAbstrac
 			cancel()
 		}
 	}
+	async delete_Offline(model: Model) {
+		if (this.paths.delete === '') {
+			throw new Error('This model is not able to delete data.')
+		}
+
+		const cancel = this.setLoading()
+
+		try {
+			const toSend = this.beforeDelete(model)
+
+			const data = await this._delete(toSend)
+			// TODO_OFFLINE what is it supposed to return??
+			return data
+		} finally {
+			cancel()
+		}
+	}
+	abstract _delete(model: unknown)
 
 	/**
 	 * Uploads a file to a url.

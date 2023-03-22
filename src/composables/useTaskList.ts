@@ -60,28 +60,13 @@ const SORT_BY_DEFAULT: SortBy = {
 /**
  * This mixin provides a base set of methods and properties to get tasks.
  */
-export function useTaskList(projectId, sortByDefault: SortBy = SORT_BY_DEFAULT) {
-	const params = ref({...getDefaultParams()})
-	
-	const search = ref('')
+export function useTaskList(projectId) {
 	const page = ref(1)
-
-	const sortBy = ref({ ...sortByDefault })
-
-
-
 	const getAllTasksParams = computed(() => {
-		let loadParams = {...params.value}
-
-		if (search.value !== '') {
-			loadParams.s = search.value
-		}
-
-		loadParams = formatSortOrder(sortBy.value, loadParams)
-
 		return [
 			{projectId: projectId.value},
-			loadParams,
+			// TODO_OFFLINE still need sorting by position.
+			{},
 			page.value || 1,
 		]
 	})
@@ -103,10 +88,7 @@ export function useTaskList(projectId, sortByDefault: SortBy = SORT_BY_DEFAULT) 
 
 	const route = useRoute()
 	watch(() => route.query, (query) => {
-		const { page: pageQueryValue, search: searchQuery } = query
-		if (searchQuery !== undefined) {
-			search.value = searchQuery as string
-		}
+		const { page: pageQueryValue } = query
 		if (pageQueryValue !== undefined) {
 			page.value = Number(pageQueryValue)
 		}
@@ -129,8 +111,5 @@ export function useTaskList(projectId, sortByDefault: SortBy = SORT_BY_DEFAULT) 
 		totalPages,
 		currentPage: page,
 		loadTasks,
-		searchTerm: search,
-		params,
-		sortByParam: sortBy,
 	}
 }

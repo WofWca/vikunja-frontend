@@ -63,7 +63,7 @@ const route = useRoute()
 const baseStore = useBaseStore()
 
 const ready = computed(() => baseStore.ready)
-const online = useOnline()
+const online = true
 
 const error = ref('')
 const showLoading = computed(() => !ready.value && error.value === '')
