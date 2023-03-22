@@ -2,6 +2,7 @@ import AbstractService from '@/services/abstractService'
 import TaskModel from '@/models/task'
 
 import type {ITask} from '@/modelTypes/ITask'
+import { getTasksOfProject } from '@/localBackend/tasks'
 
 // FIXME: unite with other filter params types
 export interface GetAllTasksParams {
@@ -19,6 +20,12 @@ export default class TaskCollectionService extends AbstractService<ITask> {
 		super({
 			getAll: '/projects/{projectId}/tasks',
 		})
+	}
+
+	// _getAll(): ITask[] {
+	_getAll: (model: { projectId: number }) => ITask[] = ({ projectId }) => {
+		// TODO_OFFLINE
+		return getTasksOfProject(projectId)
 	}
 
 	modelFactory(data) {

@@ -1,63 +1,6 @@
 <template>
 	<ProjectWrapper class="project-table" :project-id="projectId" viewName="table">
 		<template #header>
-			<div class="filter-container">
-				<div class="items">
-					<popup>
-						<template #trigger="{toggle}">
-							<x-button
-								@click.prevent.stop="toggle()"
-								icon="th"
-								variant="secondary"
-							>
-								{{ $t('project.table.columns') }}
-							</x-button>
-						</template>
-						<template #content="{isOpen}">
-							<card class="columns-filter" :class="{'is-open': isOpen}">
-								<fancycheckbox v-model="activeColumns.index">#</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.done">
-									{{ $t('task.attributes.done') }}
-								</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.title">
-									{{ $t('task.attributes.title') }}
-								</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.priority">
-									{{ $t('task.attributes.priority') }}
-								</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.labels">
-									{{ $t('task.attributes.labels') }}
-								</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.assignees">
-									{{ $t('task.attributes.assignees') }}
-								</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.dueDate">
-									{{ $t('task.attributes.dueDate') }}
-								</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.startDate">
-									{{ $t('task.attributes.startDate') }}
-								</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.endDate">
-									{{ $t('task.attributes.endDate') }}
-								</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.percentDone">
-									{{ $t('task.attributes.percentDone') }}
-								</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.created">
-									{{ $t('task.attributes.created') }}
-								</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.updated">
-									{{ $t('task.attributes.updated') }}
-								</fancycheckbox>
-								<fancycheckbox v-model="activeColumns.createdBy">
-									{{ $t('task.attributes.createdBy') }}
-								</fancycheckbox>
-							</card>
-						</template>
-					</popup>
-					<filter-popup v-model="params"/>
-				</div>
-			</div>
 		</template>
 
 		<template #default>
@@ -69,19 +12,15 @@
 							<tr>
 								<th v-if="activeColumns.index">
 									#
-									<Sort :order="sortBy.index" @click="sort('index')"/>
 								</th>
 								<th v-if="activeColumns.done">
 									{{ $t('task.attributes.done') }}
-									<Sort :order="sortBy.done" @click="sort('done')"/>
 								</th>
 								<th v-if="activeColumns.title">
 									{{ $t('task.attributes.title') }}
-									<Sort :order="sortBy.title" @click="sort('title')"/>
 								</th>
 								<th v-if="activeColumns.priority">
 									{{ $t('task.attributes.priority') }}
-									<Sort :order="sortBy.priority" @click="sort('priority')"/>
 								</th>
 								<th v-if="activeColumns.labels">
 									{{ $t('task.attributes.labels') }}
@@ -91,27 +30,21 @@
 								</th>
 								<th v-if="activeColumns.dueDate">
 									{{ $t('task.attributes.dueDate') }}
-									<Sort :order="sortBy.due_date" @click="sort('due_date')"/>
 								</th>
 								<th v-if="activeColumns.startDate">
 									{{ $t('task.attributes.startDate') }}
-									<Sort :order="sortBy.start_date" @click="sort('start_date')"/>
 								</th>
 								<th v-if="activeColumns.endDate">
 									{{ $t('task.attributes.endDate') }}
-									<Sort :order="sortBy.end_date" @click="sort('end_date')"/>
 								</th>
 								<th v-if="activeColumns.percentDone">
 									{{ $t('task.attributes.percentDone') }}
-									<Sort :order="sortBy.percent_done" @click="sort('percent_done')"/>
 								</th>
 								<th v-if="activeColumns.created">
 									{{ $t('task.attributes.created') }}
-									<Sort :order="sortBy.created" @click="sort('created')"/>
 								</th>
 								<th v-if="activeColumns.updated">
 									{{ $t('task.attributes.updated') }}
-									<Sort :order="sortBy.updated" @click="sort('updated')"/>
 								</th>
 								<th v-if="activeColumns.createdBy">
 									{{ $t('task.attributes.createdBy') }}
@@ -231,35 +164,22 @@ const SORT_BY_DEFAULT: SortBy = {
 const activeColumns = useStorage('tableViewColumns', {...ACTIVE_COLUMNS_DEFAULT})
 const sortBy = useStorage<SortBy>('tableViewSortBy', {...SORT_BY_DEFAULT})
 
-const taskList = useTaskList(toRef(props, 'projectId'), sortBy.value)
+const taskList = useTaskList(toRef(props, 'projectId'))
 
 const {
 	loading,
-	params,
+	// params,
 	totalPages,
 	currentPage,
-	sortByParam,
+	// sortByParam,
 } = taskList
 const tasks: Ref<ITask[]> = taskList.tasks
 
-Object.assign(params.value, {
-	filter_by: [],
-	filter_value: [],
-	filter_comparator: [],
-})
-
-// FIXME: by doing this we can have multiple sort orders
-function sort(property: keyof SortBy) {
-	const order = sortBy.value[property]
-	if (typeof order === 'undefined' || order === 'none') {
-		sortBy.value[property] = 'desc'
-	} else if (order === 'desc') {
-		sortBy.value[property] = 'asc'
-	} else {
-		delete sortBy.value[property]
-	}
-	sortByParam.value = sortBy.value
-}
+// Object.assign(params.value, {
+// 	filter_by: [],
+// 	filter_value: [],
+// 	filter_comparator: [],
+// })
 
 // TODO: re-enable opening task detail in modal
 // const router = useRouter()

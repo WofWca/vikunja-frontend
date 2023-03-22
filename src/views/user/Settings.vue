@@ -42,44 +42,8 @@ const navigationItems = computed(() => {
 			title: t('user.settings.general.title'),
 			routeName: 'user.settings.general',
 		},
-		{
-			title: t('user.settings.newPasswordTitle'),
-			routeName: 'user.settings.password-update',
-			condition: isLocalUser.value,
-		},
-		{
-			title: t('user.settings.updateEmailTitle'),
-			routeName: 'user.settings.email-update',
-			condition: isLocalUser.value,
-		},
-		{
-			title: t('user.settings.avatar.title'),
-			routeName: 'user.settings.avatar',
-		},
-		{
-			title: t('user.settings.totp.title'),
-			routeName: 'user.settings.totp',
-			condition: totpEnabled.value,
-		},
-		{
-			title: t('user.export.title'),
-			routeName: 'user.settings.data-export',
-		},
-		{
-			title: t('migrate.title'),
-			routeName: 'migrate.start',
-			condition: migratorsEnabled.value,
-		},
-		{
-			title: t('user.settings.caldav.title'),
-			routeName: 'user.settings.caldav',
-			condition: caldavEnabled.value,
-		},
-		{
-			title: t('user.deletion.title'),
-			routeName: 'user.settings.deletion',
-			condition: userDeletionEnabled.value,
-		},
+		// TODO_OFFLINE export/import
+		// TODO_OFFLINE caldav
 	]
 	
 	return items.filter(({condition}) => condition !== false)

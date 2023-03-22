@@ -35,7 +35,6 @@ import NoAuthWrapper from '@/components/misc/no-auth-wrapper.vue'
 import Ready from '@/components/misc/ready.vue'
 
 import {setLanguage} from '@/i18n'
-import AccountDeleteService from '@/services/accountDelete'
 import {success} from '@/message'
 
 import {useAuthStore} from '@/stores/auth'
@@ -56,41 +55,6 @@ const authUser = computed(() => authStore.authUser)
 const authLinkShare = computed(() => authStore.authLinkShare)
 
 const {t} = useI18n({useScope: 'global'})
-
-// setup account deletion verification
-const accountDeletionConfirm = computed(() => route.query?.accountDeletionConfirm as (string | undefined))
-watch(accountDeletionConfirm, async (accountDeletionConfirm) => {
-	if (accountDeletionConfirm === undefined) {
-		return
-	}
-
-	const accountDeletionService = new AccountDeleteService()
-	await accountDeletionService.confirm(accountDeletionConfirm)
-	success({message: t('user.deletion.confirmSuccess')})
-	authStore.refreshUserInfo()
-}, { immediate: true })
-
-// setup password reset redirect
-const userPasswordReset = computed(() => route.query?.userPasswordReset as (string | undefined))
-watch(userPasswordReset, (userPasswordReset) => {
-	if (userPasswordReset === undefined) {
-		return
-	}
-
-	localStorage.setItem('passwordResetToken', userPasswordReset)
-	router.push({name: 'user.password-reset.reset'})
-}, { immediate: true })
-
-// setup email verification redirect
-const userEmailConfirm = computed(() => route.query?.userEmailConfirm as (string | undefined))
-watch(userEmailConfirm, (userEmailConfirm) => {
-	if (userEmailConfirm === undefined) {
-		return
-	}
-
-	localStorage.setItem('emailConfirmToken', userEmailConfirm)
-	router.push({name: 'user.login'})
-}, { immediate: true })
 
 setLanguage()
 useColorScheme()

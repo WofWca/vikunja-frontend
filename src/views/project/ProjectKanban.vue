@@ -5,11 +5,6 @@
 		viewName="kanban"
 	>
 		<template #header>
-			<div class="filter-container" v-if="!isSavedFilter(project)">
-				<div class="items">
-					<filter-popup v-model="params" />
-				</div>
-			</div>
 		</template>
 
 		<template #default>

@@ -279,8 +279,6 @@
 						</div>
 					</div>
 
-					<!-- Comments -->
-					<comments :can-write="canWrite" :task-id="taskId"/>
 				</div>
 				<div class="column is-one-third action-buttons d-print-none" v-if="canWrite || isModal">
 					<template v-if="canWrite">
@@ -294,29 +292,6 @@
 							v-shortcut="'t'"
 						>
 							{{ task.done ? $t('task.detail.undone') : $t('task.detail.done') }}
-						</x-button>
-						<task-subscription
-							entity="task"
-							:entity-id="task.id"
-							:model-value="task.subscription"
-							@update:model-value="sub => task.subscription = sub"
-						/>
-						<x-button
-							@click="setFieldActive('assignees')"
-							variant="secondary"
-							v-shortcut="'a'"
-							v-cy="'taskDetail.assign'"
-						>
-							<span class="icon is-small"><icon icon="users"/></span>
-							{{ $t('task.detail.actions.assign') }}
-						</x-button>
-						<x-button
-							@click="setFieldActive('labels')"
-							variant="secondary"
-							icon="tags"
-							v-shortcut="'l'"
-						>
-							{{ $t('task.detail.actions.label') }}
 						</x-button>
 						<x-button
 							@click="setFieldActive('priority')"
@@ -348,50 +323,11 @@
 							{{ $t('task.detail.actions.endDate') }}
 						</x-button>
 						<x-button
-							@click="setFieldActive('reminders')"
-							variant="secondary"
-							:icon="['far', 'clock']"
-							v-shortcut="'Alt+r'"
-						>
-							{{ $t('task.detail.actions.reminders') }}
-						</x-button>
-						<x-button
-							@click="setFieldActive('repeatAfter')"
-							variant="secondary"
-							icon="history"
-						>
-							{{ $t('task.detail.actions.repeatAfter') }}
-						</x-button>
-						<x-button
 							@click="setFieldActive('percentDone')"
 							variant="secondary"
 							icon="percent"
 						>
 							{{ $t('task.detail.actions.percentDone') }}
-						</x-button>
-						<x-button
-							@click="setFieldActive('attachments')"
-							variant="secondary"
-							icon="paperclip"
-							v-shortcut="'f'"
-						>
-							{{ $t('task.detail.actions.attachments') }}
-						</x-button>
-						<x-button
-							@click="setFieldActive('relatedTasks')"
-							variant="secondary"
-							icon="sitemap"
-							v-shortcut="'r'"
-						>
-							{{ $t('task.detail.actions.relatedTasks') }}
-						</x-button>
-						<x-button
-							@click="setFieldActive('moveProject')"
-							variant="secondary"
-							icon="list"
-							v-shortcut="'m'"
-						>
-							{{ $t('task.detail.actions.moveProject') }}
 						</x-button>
 						<x-button
 							@click="setFieldActive('color')"

@@ -1,77 +1,9 @@
 <template>
 	<card :title="$t('user.settings.general.title')" class="general-settings" :loading="loading">
 		<div class="field">
-			<label class="label" :for="`newName${id}`">{{ $t('user.settings.general.name') }}</label>
-			<div class="control">
-				<input
-					@keyup.enter="updateSettings"
-					class="input"
-					:id="`newName${id}`"
-					:placeholder="$t('user.settings.general.newName')"
-					type="text"
-					v-model="settings.name"/>
-			</div>
-		</div>
-		<div class="field">
-			<label class="label">
-				{{ $t('user.settings.general.defaultProject') }}
-			</label>
-			<project-search v-model="defaultProject"/>
-		</div>
-		<div class="field">
-			<label class="checkbox">
-				<input type="checkbox" v-model="settings.overdueTasksRemindersEnabled"/>
-				{{ $t('user.settings.general.overdueReminders') }}
-			</label>
-		</div>
-		<div class="field" v-if="settings.overdueTasksRemindersEnabled">
-			<label class="label" for="overdueTasksReminderTime">
-				{{ $t('user.settings.general.overdueTasksRemindersTime') }}
-			</label>
-			<div class="control">
-				<input
-					@keyup.enter="updateSettings"
-					class="input"
-					id="overdueTasksReminderTime"
-					type="time"
-					v-model="settings.overdueTasksRemindersTime"/>
-			</div>
-		</div>
-		<div class="field">
-			<label class="checkbox">
-				<input type="checkbox" v-model="settings.emailRemindersEnabled"/>
-				{{ $t('user.settings.general.emailReminders') }}
-			</label>
-		</div>
-		<div class="field">
-			<label class="checkbox">
-				<input type="checkbox" v-model="settings.discoverableByName"/>
-				{{ $t('user.settings.general.discoverableByName') }}
-			</label>
-		</div>
-		<div class="field">
-			<label class="checkbox">
-				<input type="checkbox" v-model="settings.discoverableByEmail"/>
-				{{ $t('user.settings.general.discoverableByEmail') }}
-			</label>
-		</div>
-		<div class="field">
 			<label class="checkbox">
 				<input type="checkbox" v-model="playSoundWhenDone"/>
 				{{ $t('user.settings.general.playSoundWhenDone') }}
-			</label>
-		</div>
-		<div class="field">
-			<label class="is-flex is-align-items-center">
-					<span>
-						{{ $t('user.settings.general.weekStart') }}
-					</span>
-				<div class="select ml-2">
-					<select v-model.number="settings.weekStart">
-						<option value="0">{{ $t('user.settings.general.weekStartSunday') }}</option>
-						<option value="1">{{ $t('user.settings.general.weekStartMonday') }}</option>
-					</select>
-				</div>
 			</label>
 		</div>
 		<div class="field">
@@ -91,6 +23,7 @@
 				</div>
 			</label>
 		</div>
+		<!-- TODO support week start, others that are possible -->
 		<div class="field">
 			<label class="is-flex is-align-items-center">
 					<span>
@@ -115,20 +48,6 @@
 						<!-- TODO: use the Vikunja logo in color scheme as option buttons -->
 						<option v-for="(title, schemeId) in colorSchemeSettings" :key="schemeId" :value="schemeId">
 							{{ title }}
-						</option>
-					</select>
-				</div>
-			</label>
-		</div>
-		<div class="field">
-			<label class="is-flex is-align-items-center">
-				<span>
-					{{ $t('user.settings.general.timezone') }}
-				</span>
-				<div class="select ml-2">
-					<select v-model="settings.timezone">
-						<option v-for="tz in availableTimezones" :key="tz">
-							{{ tz }}
 						</option>
 					</select>
 				</div>

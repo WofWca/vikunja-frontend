@@ -80,9 +80,9 @@ const userInfo = computed(() => authStore.info)
 let interval: ReturnType<typeof setInterval>
 
 onMounted(() => {
-	loadNotifications()
+	// loadNotifications()
 	document.addEventListener('click', hidePopup)
-	interval = setInterval(loadNotifications, LOAD_NOTIFICATIONS_INTERVAL)
+	// interval = setInterval(loadNotifications, LOAD_NOTIFICATIONS_INTERVAL)
 })
 
 onUnmounted(() => {

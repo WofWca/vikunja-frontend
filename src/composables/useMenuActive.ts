@@ -45,7 +45,7 @@ export function useMenuActive() {
 	}
 
 	return {
-		menuActive: readonly(menuActive),
+		menuActive: false,
 		setMenuActive,
 		toggleMenu,
 	}
