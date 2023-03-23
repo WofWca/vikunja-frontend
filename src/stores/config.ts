@@ -82,7 +82,7 @@ export const useConfigStore = defineStore('config', () => {
 	async function update(): Promise<boolean> {
 		// TODO_OFFLINE it's just a stub currently
 		setConfig({
-			version: 'v0.20.1+134-a62b57ac62',
+			version: 'None whatsoever',
 			frontendUrl: 'https://try.vikunja.io/',
 			motd: '',
 			linkSharingEnabled: true,
