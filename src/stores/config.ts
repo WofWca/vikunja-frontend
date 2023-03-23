@@ -85,16 +85,16 @@ export const useConfigStore = defineStore('config', () => {
 			version: 'None whatsoever',
 			frontendUrl: 'https://try.vikunja.io/',
 			motd: '',
-			linkSharingEnabled: true,
+			linkSharingEnabled: false,
 			maxFileSize: '20MB',
-			registrationEnabled: true,
+			registrationEnabled: false,
 			availableMigrators: [
 				'vikunja-file',
 				// These require the internet.
 				// 'ticktick',
 				// 'todoist',
 			],
-			taskAttachmentsEnabled: true,
+			taskAttachmentsEnabled: false,
 			enabledBackgroundProviders: [
 				'upload',
 				// 'unsplash',
@@ -104,7 +104,8 @@ export const useConfigStore = defineStore('config', () => {
 				imprintUrl: '',
 				privacyPolicyUrl: '',
 			},
-			caldavEnabled: true,
+			// TODO_OFFLINE implement
+			caldavEnabled: false,
 			auth: {
 				local: {
 					enabled: true,
@@ -117,7 +118,8 @@ export const useConfigStore = defineStore('config', () => {
 			},
 			emailRemindersEnabled: false,
 			userDeletionEnabled: false,
-			taskCommentsEnabled: true,
+			// TODO_OFFLINE implement comments
+			taskCommentsEnabled: false,
 		})
 		const success = true
 		return success
