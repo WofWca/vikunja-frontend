@@ -1,5 +1,5 @@
 import type { IBucket } from '@/modelTypes/IBucket'
-import { getTasksOfBucket } from './tasks'
+import { getAllTasks, getTasksOfBucket } from './tasks'
 import { defaultPositionIfZero } from './utils/calculateDefaultPosition'
 
 // TODO_OFFLINE there is a lot of duplication between `localBackend` parts.
@@ -110,10 +110,16 @@ export function getDefaultBucket(projectId: number): IBucket {
  */
 export function createBucket(bucket: IBucket): IBucket {
 	const allBuckets = getAllBucketsWithoutTasks()
+	const maxPosition = allBuckets.reduce((currMax, b) => {
+		return b.position > currMax
+			? b.position
+			: currMax
+	}, -Infinity)
 	const newBucketFullData = {
 		...bucket,
 		id: Math.round(Math.random() * 1000000000000),
-		position: defaultPositionIfZero(bucket.position),
+		// position: defaultPositionIfZero(bucket.position),
+		position: maxPosition * 2,
 	}
 	const newBucketFullDataToStore = {
 		...newBucketFullData,
@@ -126,13 +132,51 @@ export function createBucket(bucket: IBucket): IBucket {
 }
 
 export function updateBucket(newBucketData: IBucket) {
-	const allBuckets = getAllBuckets()
+	const allBuckets = getAllBucketsWithoutTasks()
 	// TODO_OFFLINE looks like the real backend also filters by prjectId, but
 	// since in localBackend all bucket `id`s are unique even between projects,
 	// it's not necessary
-	const targetBucketInd = allBuckets.findIndex(t => t.id === newBucketData.id)
+	const targetBucketInd = allBuckets.findIndex(b => b.id === newBucketData.id)
+	if (targetBucketInd < 0) {
+		console.warn('Tried to update a bucket, but it does not exist')
+		return
+	}
 	//  TODO_OFFLINE remove tasks.
 	allBuckets.splice(targetBucketInd, 1, newBucketData)
 	localStorage.setItem('buckets', JSON.stringify(allBuckets))
 	return newBucketData
+}
+
+export function deleteBucket({ id }: { id: number }) {
+	const allBuckets = getAllBucketsWithoutTasks()
+
+	if (allBuckets.length <= 1) {
+		// Prevent removing the last bucket.
+		// https://kolaente.dev/vikunja/api/src/commit/6aadaaaffc1fff4a94e35e8fa3f6eab397cbc3ce/pkg/models/kanban.go#L325-L335
+		return
+	}
+
+	const targetBucketInd = allBuckets.findIndex(b => b.id === id)
+	if (targetBucketInd < 0) {
+		console.warn('Tried to delete a bucket, but it does not exist')
+		return
+	}
+	const projectId = allBuckets[targetBucketInd].projectId
+	allBuckets.splice(targetBucketInd, 1)
+	localStorage.setItem('buckets', JSON.stringify(allBuckets))
+
+	// Move all the tasks from this bucket to the default one.
+	// https://kolaente.dev/vikunja/api/src/commit/6aadaaaffc1fff4a94e35e8fa3f6eab397cbc3ce/pkg/models/kanban.go#L349-L353
+	const deletedBuckedId = id
+	const defaultBucketId = getDefaultBucket(projectId).id
+	const allTasks = getAllTasks()
+	allTasks.forEach(t => {
+		if (t.bucketId === deletedBuckedId) {
+			t.bucketId = defaultBucketId
+		}
+	})
+	localStorage.setItem('tasks', JSON.stringify(allTasks))
+
+	// TODO_OFFLINE idk what it's supposed to return
+	return true
 }

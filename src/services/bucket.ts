@@ -2,7 +2,7 @@ import AbstractService from './abstractService'
 import BucketModel from '../models/bucket'
 import TaskService from '@/services/task'
 import type { IBucket } from '@/modelTypes/IBucket'
-import { createBucket, getAllBucketsOfProject, updateBucket } from '@/localBackend/buckets'
+import { createBucket, deleteBucket, getAllBucketsOfProject, updateBucket } from '@/localBackend/buckets'
 
 export default class BucketService extends AbstractService<IBucket> {
 	constructor() {
@@ -17,6 +17,7 @@ export default class BucketService extends AbstractService<IBucket> {
 	_getAll = ({ projectId }: { projectId: number }) => getAllBucketsOfProject(projectId)
 	_create = (bucket: IBucket) => createBucket(bucket)
 	_update = (bucket: IBucket) => updateBucket(bucket)
+	_delete = (bucket: IBucket) => deleteBucket(bucket)
 
 	modelFactory(data: Partial<IBucket>) {
 		return new BucketModel(data)

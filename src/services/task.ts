@@ -31,7 +31,7 @@ export default class TaskService extends AbstractService<ITask> {
 	_get = (model: ITask) => getTask(model.id)
 	_create = (taskData: ITask) => createTask(taskData)
 	_update = (model: ITask) => updateTask(model)
-	_delete = (model: ITask) => deleteTask(model.id)
+	_delete = (model: ITask) => deleteTask(model)
 
 	modelFactory(data) {
 		return new TaskModel(data)
