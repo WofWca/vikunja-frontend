@@ -38,12 +38,6 @@ const ProjectKanban = () => import('@/views/project/ProjectKanban.vue')
 const ProjectInfo = () => import('@/views/project/ProjectInfo.vue')
 
 // Project Settings
-const ProjectSettingEdit = () => import('@/views/project/settings/edit.vue')
-const ProjectSettingBackground = () => import('@/views/project/settings/background.vue')
-const ProjectSettingDuplicate = () => import('@/views/project/settings/duplicate.vue')
-const ProjectSettingShare = () => import('@/views/project/settings/share.vue')
-const ProjectSettingDelete = () => import('@/views/project/settings/delete.vue')
-const ProjectSettingArchive = () => import('@/views/project/settings/archive.vue')
 
 // Namespace Settings
 const NamespaceSettingEdit = () => import('@/views/namespaces/settings/edit.vue')
@@ -52,9 +46,6 @@ const NamespaceSettingArchive = () => import('@/views/namespaces/settings/archiv
 const NamespaceSettingDelete = () => import('@/views/namespaces/settings/delete.vue')
 
 // Saved Filters
-const FilterNew = () => import('@/views/filters/FilterNew.vue')
-const FilterEdit = () => import('@/views/filters/FilterEdit.vue')
-const FilterDelete = () => import('@/views/filters/FilterDelete.vue')
 
 const UserSettingsComponent = () => import('@/views/user/Settings.vue')
 const UserSettingsAvatarComponent = () => import('@/views/user/settings/Avatar.vue')
@@ -230,73 +221,6 @@ const router = createRouter({
 			},
 		},
 		{
-			path: '/projects/:projectId/settings/edit',
-			name: 'project.settings.edit',
-			component: ProjectSettingEdit,
-			props: route => ({ projectId: Number(route.params.projectId as string) }),
-			meta: {
-				showAsModal: true,
-			},
-		},
-		{
-			path: '/projects/:projectId/settings/background',
-			name: 'project.settings.background',
-			component: ProjectSettingBackground,
-			meta: {
-				showAsModal: true,
-			},
-		},
-		{
-			path: '/projects/:projectId/settings/duplicate',
-			name: 'project.settings.duplicate',
-			component: ProjectSettingDuplicate,
-			meta: {
-				showAsModal: true,
-			},
-		},
-		{
-			path: '/projects/:projectId/settings/share',
-			name: 'project.settings.share',
-			component: ProjectSettingShare,
-			meta: {
-				showAsModal: true,
-			},
-		},
-		{
-			path: '/projects/:projectId/settings/delete',
-			name: 'project.settings.delete',
-			component: ProjectSettingDelete,
-			meta: {
-				showAsModal: true,
-			},
-		},
-		{
-			path: '/projects/:projectId/settings/archive',
-			name: 'project.settings.archive',
-			component: ProjectSettingArchive,
-			meta: {
-				showAsModal: true,
-			},
-		},
-		{
-			path: '/projects/:projectId/settings/edit',
-			name: 'filter.settings.edit',
-			component: FilterEdit,
-			meta: {
-				showAsModal: true,
-			},
-			props: route => ({ projectId: Number(route.params.projectId as string) }),
-		},
-		{
-			path: '/projects/:projectId/settings/delete',
-			name: 'filter.settings.delete',
-			component: FilterDelete,
-			meta: {
-				showAsModal: true,
-			},
-			props: route => ({ projectId: Number(route.params.projectId as string) }),
-		},
-		{
 			path: '/projects/:projectId/info',
 			name: 'project.info',
 			component: ProjectInfo,
@@ -403,14 +327,6 @@ const router = createRouter({
 				service: route.params.service as string,
 				code: route.query.code as string,
 			}),
-		},
-		{
-			path: '/filters/new',
-			name: 'filters.create',
-			component: FilterNew,
-			meta: {
-				showAsModal: true,
-			},
 		},
 		{
 			path: '/about',
