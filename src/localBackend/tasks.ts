@@ -76,16 +76,27 @@ export function getTask(taskId: number) {
 }
 
 export function updateTask(newTaskData: ITask) {
+	// TODO_OFFLINE a lot of stuff is not implemented. For example, marking a task "done"
+	// when it is moved to the "done" bucket.
+	// https://kolaente.dev/vikunja/api/src/commit/6aadaaaffc1fff4a94e35e8fa3f6eab397cbc3ce/pkg/models/tasks.go#L1008
 	const allTasks = getAllTasks()
 	const targetTaskInd = allTasks.findIndex(t => t.id === newTaskData.id)
+	if (targetTaskInd < 0) {
+		console.warn('Tried to update a task, but it does not exist')
+		return
+	}
 	allTasks.splice(targetTaskInd, 1, newTaskData)
 	localStorage.setItem('tasks', JSON.stringify(allTasks))
 	return newTaskData
 }
 
-export function deleteTask(taskId: number) {
+export function deleteTask({ id }: { id: number }) {
 	const allTasks = getAllTasks()
-	const targetTaskInd = allTasks.findIndex(t => t.id === taskId)
+	const targetTaskInd = allTasks.findIndex(t => t.id === id)
+	if (targetTaskInd < 0) {
+		console.warn('Tried to delete a task, but it does not exist')
+		return
+	}
 	allTasks.splice(targetTaskInd, 1)
 	localStorage.setItem('tasks', JSON.stringify(allTasks))
 
