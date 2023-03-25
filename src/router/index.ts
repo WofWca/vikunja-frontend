@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import type { RouteLocation } from 'vue-router'
 import {saveLastVisited} from '@/helpers/saveLastVisited'
 
@@ -63,7 +63,10 @@ const EditTeamComponent = () => import('@/views/teams/EditTeam.vue')
 const NewTeamComponent = () =>  import('@/views/teams/NewTeam.vue')
 
 const router = createRouter({
-	history: createWebHistory(import.meta.env.BASE_URL),
+	// Using `createWebHashHistory` instead of `createWebHistory` so it can
+	// properly work on GitHub pages and such.
+	// TODO_OFFLINE make it configurable, make MR to the upstream repo.
+	history: createWebHashHistory(import.meta.env.BASE_URL),
 	scrollBehavior(to, from, savedPosition) {
 		// If the user is using their forward/backward keys to navigate, we want to restore the scroll view
 		if (savedPosition) {
