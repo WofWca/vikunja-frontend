@@ -84,6 +84,11 @@ const router = createRouter({
 			path: '/',
 			name: 'home',
 			component: HomeComponent,
+			// TODO_OFFLINE don't redirect when there's actually something useful on the home page
+			redirect: {
+				name: 'project.index',
+				params: { projectId: 1 },
+			},
 		},
 		{
 			path: '/:pathMatch(.*)*',
