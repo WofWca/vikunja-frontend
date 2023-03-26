@@ -28,7 +28,7 @@
     "preview:dev": "vite preview --outDir dist-dev --mode development --port 4173",
     "build": "vite build && workbox copyLibraries dist/",
     "build-webxdc": "pnpm run build && pnpm run pack-webxdc",
-    "pack-webxdc": "./generate-webxdc-manifest.sh > dist/manifest.toml && cd dist && cp images/icons/icon-maskable.png icon.png && ../create-xdc.sh",
+    "pack-webxdc": "./generate-webxdc-manifest.sh > dist/manifest.toml && cd dist && cp images/icons/icon-maskable.png icon.png && ../create-xdc.sh vikunja.xdc",
     "build:modern-only": "BUILD_MODERN_ONLY=true vite build && workbox copyLibraries dist/",
     "build:dev": "vite build --mode development --outDir dist-dev/",
     "lint": "eslint --ignore-pattern '*.test.*' ./src --ext .vue,.js,.ts",
