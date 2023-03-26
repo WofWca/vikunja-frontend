@@ -1,6 +1,6 @@
 # How the file was made: template used: GitHub's suggested "deploy Nuxt app to GitHub pages"
 # Since it's a Vite project, better refer to https://vitejs.dev/guide/static-deploy.html#github-pages
-name: Deploy Nuxt site to Pages
+name: Deploy and release
 
 on:
   push:
