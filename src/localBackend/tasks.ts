@@ -64,7 +64,9 @@ export function createTask(newTask: ITask): ITask {
 		position: defaultPositionIfZero(newTask.position),
 		kanbanPosition: defaultPositionIfZero(newTask.kanbanPosition),
 		// https://kolaente.dev/vikunja/api/src/commit/769db0dab2e50bc477dec6c7e18309effc80a1bd/pkg/models/tasks.go#L939-L940
-		bucketId: newTask.bucketId || getDefaultBucket(newTask.projectId).id,
+		bucketId: newTask.bucketId > 0
+			? newTask.bucketId
+			: getDefaultBucket(newTask.projectId).id,
 	}
 	allTasks.unshift(newTaskFullData)
 	localStorage.setItem('tasks', JSON.stringify(allTasks))
