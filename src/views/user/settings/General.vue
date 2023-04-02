@@ -1,5 +1,39 @@
 <template>
 	<card :title="$t('user.settings.general.title')" class="general-settings" :loading="loading">
+		<template v-if="isWebxdc">
+			<div class="field">
+				<label class="checkbox">
+					<input type="checkbox" v-model="sharingEnabled"/>
+					Enable sharing
+				</label>
+				<!-- TODO_OFFLINE a way to have multiple rooms, some private. -->
+				<p>Everyone who knows the room name and the password will have read and write access to the data over network.</p>
+				<p>You need to reload the page after changing the sharing settings.</p>
+			</div>
+			<template v-if="sharingEnabled">
+				<div class="field">
+					<label class="is-flex is-align-items-center">
+						Sharing: room name
+						<input
+							class="input"
+							type="text"
+							required
+							v-model="sharingRoomName"
+						/>
+					</label>
+				</div>
+				<div class="field">
+					<label class="is-flex is-align-items-center">
+						Sharing: room password
+						<input
+							class="input"
+							type="password"
+							v-model="sharingRoomPassword"
+						/>
+					</label>
+				</div>
+			</template>
+		</template>
 		<div class="field">
 			<label class="checkbox">
 				<input type="checkbox" v-model="playSoundWhenDone"/>
@@ -139,6 +173,11 @@ function getPlaySoundWhenDoneSetting() {
 }
 
 const playSoundWhenDone = ref(getPlaySoundWhenDoneSetting())
+// TODO_OFFLINE refactor: DRY
+const isWebxdc = window.webxdc == undefined
+const sharingEnabled = ref(localStorage.getItem('sharingEnabled') === 'true')
+const sharingRoomName = ref(localStorage.getItem('sharingRoomName') ?? '')
+const sharingRoomPassword = ref(localStorage.getItem('sharingRoomPassword') ?? '')
 const quickAddMagicMode = ref(getQuickAddMagicMode())
 
 const authStore = useAuthStore()
@@ -178,6 +217,13 @@ watch(
 
 async function updateSettings() {
 	localStorage.setItem(playSoundWhenDoneKey, playSoundWhenDone.value ? 'true' : 'false')
+	localStorage.setItem('sharingEnabled', sharingEnabled.value ? 'true' : 'false')
+	if (sharingRoomName.value.length > 0) {
+		localStorage.setItem('sharingRoomName', sharingRoomName.value)
+	}
+	if (sharingRoomPassword.value.length > 0) {
+		localStorage.setItem('sharingRoomPassword', sharingRoomPassword.value)
+	}
 	setQuickAddMagicMode(quickAddMagicMode.value)
 
 	await authStore.saveUserSettings({

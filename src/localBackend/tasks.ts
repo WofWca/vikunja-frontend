@@ -1,6 +1,13 @@
 import type { ITask } from '@/modelTypes/ITask'
+import * as Y from 'yjs'
 import { getDefaultBucket } from './buckets'
+import { ensureCreateSyncedYDoc } from './sync'
 import { defaultPositionIfZero } from './utils/calculateDefaultPosition'
+
+// createSyncedYDoc().then(d => {
+// 	window.ydoc = d
+// 	console.log(d)
+// })
 
 // TODO_OFFLINE return types? ITask is not it, because of snake case and Date format.
 
@@ -23,12 +30,16 @@ function getUniquieInt() {
 /**
  * Yes, we store the data in camelCase.
  */
-export function getAllTasks(): ITask[] {
-	const fromStorage = localStorage.getItem('tasks')
-	if (!fromStorage) {
-		return []
-	}
-	const tasks: ITask[] = JSON.parse(fromStorage)
+export async function getAllTasks(): Promise<ITask[]> {
+	// const fromStorage = localStorage.getItem('tasks')
+	// if (!fromStorage) {
+	// 	return []
+	// }
+	// const tasks: ITask[] = JSON.parse(fromStorage)
+
+	const fromYdoc = (await ensureCreateSyncedYDoc()).getArray('tasks')
+
+	const tasks = fromYdoc.toArray() as ITask[]
 	// TODO_OFFLINE don't just always sort them by position but look at
 	// `parameters.sort_by`.
 	return tasks.sort((a, b) => a.position - b.position)
@@ -37,26 +48,29 @@ export function getAllTasks(): ITask[] {
 // getAllTasksWithFilters(params)
 
 // TODO_OFFLINE we only have one project currently, actually.
-export function getTasksOfProject<PID extends number>(projectId: PID): Array<ITask & { projectId: PID }> {
-	const tasks: ITask[] = getAllTasks().filter(t => t.projectId === projectId)
+export async function getTasksOfProject<PID extends number>(projectId: PID): Promise<(ITask & { projectId: PID })[]> {
+	const tasks: ITask[] = (await getAllTasks()).filter(t => t.projectId === projectId)
 	return tasks
 }
 
 /**
  * Unsorted
  */
-export function getTasksOfBucket<BID extends number>(
+export async function getTasksOfBucket<BID extends number>(
 	bucketId: BID,
-): Array<ITask & { bucketId: BID }> {
-	const tasks: ITask[] = getAllTasks().filter(t => t.bucketId === bucketId)
+): Promise<Array<ITask & { bucketId: BID} >> {
+	const tasks: ITask[] = (await getAllTasks()).filter(t => t.bucketId === bucketId)
 	return tasks
 }
 
 /**
  * https://kolaente.dev/vikunja/api/src/commit/066c26f83e1e066bdc9d80b4642db1df0d6a77eb/pkg/models/tasks.go#L913-L990
  */
-export function createTask(newTask: ITask): ITask {
-	const allTasks = getAllTasks()
+export async function createTask(newTask: ITask): Promise<ITask> {
+
+
+
+	// const allTasks = getAllTasks()
 	const newTaskFullData: ITask = {
 		...newTask,
 		id: Math.round(Math.random() * 1000000000000),
@@ -66,41 +80,95 @@ export function createTask(newTask: ITask): ITask {
 		// https://kolaente.dev/vikunja/api/src/commit/769db0dab2e50bc477dec6c7e18309effc80a1bd/pkg/models/tasks.go#L939-L940
 		bucketId: newTask.bucketId > 0
 			? newTask.bucketId
-			: getDefaultBucket(newTask.projectId).id,
-	}
-	allTasks.unshift(newTaskFullData)
-	localStorage.setItem('tasks', JSON.stringify(allTasks))
+			: (await getDefaultBucket(newTask.projectId)).id,
+	};
+
+	(await ensureCreateSyncedYDoc())
+		.getArray('tasks')
+		.unshift([newTaskFullData])
+		// .unshift([new Y.Map(newTaskFullData)])
+
+	// (await allTasks).unshift(newTaskFullData)
+	// localStorage.setItem('tasks', JSON.stringify(allTasks))
 	return newTaskFullData
 }
 
-export function getTask(taskId: number) {
-	return getAllTasks().find(t => t.id === taskId)
+export async function getTask(taskId: number) {
+	return (await getAllTasks()).find(t => t.id === taskId)
 }
 
-export function updateTask(newTaskData: ITask) {
+export async function updateTask(newTaskData: ITask) {
 	// TODO_OFFLINE a lot of stuff is not implemented. For example, marking a task "done"
 	// when it is moved to the "done" bucket.
 	// https://kolaente.dev/vikunja/api/src/commit/6aadaaaffc1fff4a94e35e8fa3f6eab397cbc3ce/pkg/models/tasks.go#L1008
-	const allTasks = getAllTasks()
-	const targetTaskInd = allTasks.findIndex(t => t.id === newTaskData.id)
+
+
+	// let targetTask
+	// const asd = (await ensureCreateSyncedYDoc()).getArray('tasks').forEach(_t => {
+	// 	// const t = _t as Y.Map<ITask>
+	// 	const t = _t
+	// 	if (t.get('id') === newTaskData.id) {
+	// 		targetTask = t
+	// 	}
+	// })
+
+	const tasksArr = (await ensureCreateSyncedYDoc()).getArray('tasks')
+
+	let targetTaskInd = -1
+	tasksArr.forEach((_t, i) => {
+		// const t = _t as Y.Map<ITask>
+		const t = _t
+		if (t.id === newTaskData.id) {
+			targetTaskInd = i;
+		}
+	})
+
+	// const allTasks = await getAllTasks()
+	// const targetTaskInd = allTasks.findIndex(t => t.id === newTaskData.id)
+
 	if (targetTaskInd < 0) {
 		console.warn('Tried to update a task, but it does not exist')
 		return
 	}
-	allTasks.splice(targetTaskInd, 1, newTaskData)
-	localStorage.setItem('tasks', JSON.stringify(allTasks))
+
+	tasksArr.doc!.transact(() => {
+		// TODO_OFFLINE consider mutating the task instead.
+		tasksArr.delete(targetTaskInd)
+		tasksArr.insert(targetTaskInd, [newTaskData])
+	})
+
+	// allTasks.splice(targetTaskInd, 1, newTaskData)
+	// localStorage.setItem('tasks', JSON.stringify(allTasks))
 	return newTaskData
 }
 
-export function deleteTask({ id }: { id: number }) {
-	const allTasks = getAllTasks()
-	const targetTaskInd = allTasks.findIndex(t => t.id === id)
+export async function deleteTask({ id }: { id: number }) {
+	const tasksArr = (await ensureCreateSyncedYDoc()).getArray('tasks')
+
+	let targetTaskInd = -1
+	tasksArr.forEach((_t, i) => {
+		// const t = _t as Y.Map<ITask>
+		const t = _t
+		if (t.id === id) {
+			targetTaskInd = i;
+		}
+	})
+
 	if (targetTaskInd < 0) {
 		console.warn('Tried to delete a task, but it does not exist')
 		return
 	}
-	allTasks.splice(targetTaskInd, 1)
-	localStorage.setItem('tasks', JSON.stringify(allTasks))
+
+	// tasksArr.delete(targetTaskInd)
+
+	// const allTasks = await getAllTasks()
+	// const targetTaskInd = allTasks.findIndex(t => t.id === id)
+	// if (targetTaskInd < 0) {
+	// 	console.warn('Tried to delete a task, but it does not exist')
+	// 	return
+	// }
+	// allTasks.splice(targetTaskInd, 1)
+	// localStorage.setItem('tasks', JSON.stringify(allTasks))
 
 	// TODO_OFFLINE idk what it's supposed to return
 	return true

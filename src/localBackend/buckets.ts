@@ -1,4 +1,5 @@
 import type { IBucket } from '@/modelTypes/IBucket'
+import { ensureCreateSyncedYDoc } from './sync'
 import { getAllTasks, getTasksOfBucket } from './tasks'
 import { defaultPositionIfZero } from './utils/calculateDefaultPosition'
 
@@ -59,15 +60,20 @@ function getInitialBuckets(): IBucketWithoutTasks[] {
 	]
 }
 
-function getAllBucketsWithoutTasks(): IBucketWithoutTasks[] {
-	const fromStorage = localStorage.getItem('buckets')
-	if (!fromStorage) {
+async function getAllBucketsWithoutTasks(): Promise<IBucketWithoutTasks[]> {
+	const fromYdoc = (await ensureCreateSyncedYDoc())
+		// Yes, a map with an only element. I'm too lazy to make it a Y.Array.
+		.getMap('bucketsMap')
+		.get('buckets')
+
+	// const fromStorage = localStorage.getItem('buckets')
+	if (!fromYdoc) {
 		// TODO_OFFLINE dynamic import.
 		// Currently we have a constant list. Each project must have at least one bucket
 		return getInitialBuckets()
 	}
 	// TODO_OFFLINE fill the `tasks`.
-	return JSON.parse(fromStorage)
+	return fromYdoc
 }
 
 // /**
@@ -77,23 +83,23 @@ function getAllBucketsWithoutTasks(): IBucketWithoutTasks[] {
 //   (bucket as IBucket).tasks = getAllTas
 // }
 
-function getAllBuckets(): IBucket[] {
-	const bucketsWithoutTasks = getAllBucketsWithoutTasks()
-	const buckets = bucketsWithoutTasks.map(bucketWithoutTasks => {
+async function getAllBuckets(): Promise<IBucket[]> {
+	const bucketsWithoutTasks = await getAllBucketsWithoutTasks()
+	const buckets = bucketsWithoutTasks.map(async bucketWithoutTasks => {
 		const b = bucketWithoutTasks as IBucket
-		b.tasks = getTasksOfBucket(b.id)
+		b.tasks = (await getTasksOfBucket(b.id))
 			// Tasks are always sorted by their `kanbanPosition`.
 			// https://kolaente.dev/vikunja/api/src/commit/6d8db0ce1e00e8c200a43b28ac98eb0fb825f4d4/pkg/models/kanban.go#L173-L178
 			.sort((a, b) => a.kanbanPosition - b.kanbanPosition)
 		return b
 	})
-	return buckets
+	return Promise.all(buckets)
 }
 
-export function getAllBucketsOfProject(projectId: number): IBucket[] {
+export async function getAllBucketsOfProject(projectId: number): Promise<IBucket[]> {
 	// TODO_OFFLINE filter by position bruh.
 	// TODO_OFFLINE perf: maybe it's not worth getting tasks of each project then in `getAllBuckets`.
-	return getAllBuckets()
+	return (await getAllBuckets())
 		.filter(b => b.projectId === projectId)
 		// Buckets are always sorted.
 		// https://kolaente.dev/vikunja/api/src/commit/6d8db0ce1e00e8c200a43b28ac98eb0fb825f4d4/pkg/models/kanban.go#L139-L143
@@ -101,15 +107,17 @@ export function getAllBucketsOfProject(projectId: number): IBucket[] {
 }
 
 /** https://kolaente.dev/vikunja/api/src/commit/769db0dab2e50bc477dec6c7e18309effc80a1bd/pkg/models/kanban.go#L80-L87 */
-export function getDefaultBucket(projectId: number): IBucket {
-	return getAllBucketsOfProject(projectId).sort((a, b) => a.position - b.position)[0]
+export async function getDefaultBucket(projectId: number): Promise<IBucket> {
+	return (await getAllBucketsOfProject(projectId))
+		.sort((a, b) => a.position - b.position)
+		[0]
 }
 
 /**
  * https://kolaente.dev/vikunja/api/src/commit/066c26f83e1e066bdc9d80b4642db1df0d6a77eb/pkg/models/kanban.go#L252-L267
  */
-export function createBucket(bucket: IBucket): IBucket {
-	const allBuckets = getAllBucketsWithoutTasks()
+export async function createBucket(bucket: IBucket): Promise<IBucket> {
+	const allBuckets = await getAllBucketsWithoutTasks()
 	const maxPosition = allBuckets.reduce((currMax, b) => {
 		return b.position > currMax
 			? b.position
@@ -126,13 +134,16 @@ export function createBucket(bucket: IBucket): IBucket {
 		// It's not actually necessary FYI, it will just taske extra space in the storage.
 		tasks: undefined,
 	}
-	allBuckets.push(newBucketFullDataToStore)
-	localStorage.setItem('buckets', JSON.stringify(allBuckets))
+	allBuckets.push(newBucketFullDataToStore);
+	(await ensureCreateSyncedYDoc())
+		.getMap('bucketsMap')
+		.set('buckets', allBuckets)
+	// localStorage.setItem('buckets', JSON.stringify(allBuckets))
 	return newBucketFullData
 }
 
-export function updateBucket(newBucketData: IBucket) {
-	const allBuckets = getAllBucketsWithoutTasks()
+export async function updateBucket(newBucketData: IBucket) {
+	const allBuckets = await getAllBucketsWithoutTasks()
 	// TODO_OFFLINE looks like the real backend also filters by prjectId, but
 	// since in localBackend all bucket `id`s are unique even between projects,
 	// it's not necessary
@@ -142,13 +153,17 @@ export function updateBucket(newBucketData: IBucket) {
 		return
 	}
 	//  TODO_OFFLINE remove tasks.
-	allBuckets.splice(targetBucketInd, 1, newBucketData)
-	localStorage.setItem('buckets', JSON.stringify(allBuckets))
+	newBucketData.tasks = undefined
+	allBuckets.splice(targetBucketInd, 1, newBucketData);
+	(await ensureCreateSyncedYDoc())
+		.getMap('bucketsMap')
+		.set('buckets', allBuckets)
+	// localStorage.setItem('buckets', JSON.stringify(allBuckets))
 	return newBucketData
 }
 
-export function deleteBucket({ id }: { id: number }) {
-	const allBuckets = getAllBucketsWithoutTasks()
+export async function deleteBucket({ id }: { id: number }) {
+	const allBuckets = await getAllBucketsWithoutTasks()
 
 	if (allBuckets.length <= 1) {
 		// Prevent removing the last bucket.
@@ -162,20 +177,37 @@ export function deleteBucket({ id }: { id: number }) {
 		return
 	}
 	const projectId = allBuckets[targetBucketInd].projectId
-	allBuckets.splice(targetBucketInd, 1)
-	localStorage.setItem('buckets', JSON.stringify(allBuckets))
+	allBuckets.splice(targetBucketInd, 1);
+	// localStorage.setItem('buckets', JSON.stringify(allBuckets))
+
+	const ydoc = await ensureCreateSyncedYDoc()
+	ydoc
+		.getMap('bucketsMap')
+		.set('buckets', allBuckets)
 
 	// Move all the tasks from this bucket to the default one.
 	// https://kolaente.dev/vikunja/api/src/commit/6aadaaaffc1fff4a94e35e8fa3f6eab397cbc3ce/pkg/models/kanban.go#L349-L353
 	const deletedBuckedId = id
-	const defaultBucketId = getDefaultBucket(projectId).id
-	const allTasks = getAllTasks()
-	allTasks.forEach(t => {
-		if (t.bucketId === deletedBuckedId) {
-			t.bucketId = defaultBucketId
-		}
+	const defaultBucketId = (await getDefaultBucket(projectId)).id
+
+	// const allTasks = getAllTasks()
+	// allTasks.forEach(t => {
+	// 	if (t.bucketId === deletedBuckedId) {
+	// 		t.bucketId = defaultBucketId
+	// 	}
+	// })
+	// localStorage.setItem('tasks', JSON.stringify(allTasks))
+	const tasksYarr = ydoc.getArray('tasks')
+	ydoc.transact(() => {
+		tasksYarr.forEach((t, i) => {
+			if (t.bucketId === deletedBuckedId) {
+				// TODO_OFFLINE not sure if it's ok to mutate the array while `forEach` ing it.
+				t.bucketId = defaultBucketId
+				tasksYarr.delete(i)
+				tasksYarr.insert(i, [t])
+			}
+		})
 	})
-	localStorage.setItem('tasks', JSON.stringify(allTasks))
 
 	// TODO_OFFLINE idk what it's supposed to return
 	return true
