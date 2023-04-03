@@ -34,6 +34,22 @@ console.log(isModernBuild
 	: 'Building "legacy" build with "@vitejs/plugin-legacy"',
 )
 
+// Very hacky. Why not incldue it right there in `index.html`? Because otherwise
+// would try to resolve `webxdc.js` and transform it.
+// TODO_OFFLINE refactor: don't include it in non-webxdc build because it's always a 404.
+const injectWebxdcIntoIndexHtmlPlugin = () => {
+  return {
+    name: 'inject-webxdc-into-index-html',
+		enforce: 'post',
+    transformIndexHtml(html) {
+      return html.replace(
+				'<!--WEBXDC_SCRIPT_PLACEHOLDER-->',
+				'<script type="module" src="/webxdc.js"></script>'
+      )
+    },
+  }
+}
+
 /**
  * @param fontNames Array of the file names of the fonts without axis and hash suffixes
  */
@@ -87,6 +103,7 @@ export default defineConfig(({mode}) => {
 			},
 		},
 		plugins: [
+			injectWebxdcIntoIndexHtmlPlugin(),
 			vue({
 				reactivityTransform: true,
 			}),
@@ -187,9 +204,6 @@ export default defineConfig(({mode}) => {
 		build: {
 			target: 'esnext',
 			rollupOptions: {
-				external: [
-					"/webxdc.js"
-				],
 				plugins: [
 					visualizer({
 						filename: 'stats.html',
